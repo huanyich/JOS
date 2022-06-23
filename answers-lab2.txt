@@ -1,0 +1,40 @@
+Questions 2.
+
+What entries (rows) in the page directory have been ﬁlled in at this point? What addresses do they map and
+where do they point? In other words, ﬁll out this table as much as possible:
+
+Entry   Base Virtual Address        Points to (logically)
+1023    ...                         Last page
+...     ...                         4Mb page
+960     0xF0000000                  KERNBASE - Start of the kernel address space
+959     0xEFFFF000                  KERNBASE - KSTKSIZE - The kernel stack
+957     0xEF400000                  UVPT - Page Table Directory
+956     0xEF000000                  UPAGES - Pages themselves
+
+3. We have placed the kernel and user environment in the same address space. Why will user programs not be able to read or
+write the kernel’s memory? What speciﬁc mechanisms protect the kernel memory?
+
+We protect kernel memory with special bits that specify permissions to access each memory page.
+This protection mechanism is supported by 80386 architecture.
+
+4. What is the maximum amount of physical memory that this operating system can support? Why?
+
+This is the maximum value of the unsigned 32-bit integer, 2^32.
+This is the maximum value of bytes that can be addressed using 32-bit integers.
+
+5. How much space overhead is there for managing memory, if we actually had the maximum amount of physical memory?
+How is this overhead broken down?
+
+This consists of the page table directory and the pages themselves.
+The size of each of these regions is PTSIZE = 0x400000.
+
+6. Revisit the page table setup in  kern/entry.S  and  kern/entrypgdir.c . Immediately after we turn on paging, EIP is still a low
+number (a little over 1MB). At what point do we transition to running at an EIP above KERNBASE? What makes it possible
+for us to continue executing at a low EIP between when we enable paging and when we begin running at an EIP above
+    KERNBASE? Why is this transition necessary?
+
+    At boot time, only one special minimal page table is used,
+    which maps virtual addresses in the range 0 - 4M to the same the range 0 - 4M.
+    The transition to the addresses above KERNBASE occurs after the initialization
+    of the page table directory and the pages themselves.
+    This happens at the very end of function mem_init() (we do not participate in this).
